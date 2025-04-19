@@ -1,0 +1,67 @@
+
+using DifferentialEquations
+
+function f(y, μ)
+    #Where x = y1, y = y2, z = y3 (positions) and vx = y4, vy = y5, vz = y6 (velocities)
+    
+    y1, y2, y3, y4, y5, y6 = y 
+    r_magitude = sqrt(y1^2 + y2^2 + y3^3)
+    y1_dot = y4
+    y2_dot = y5
+    y3_dot = y6
+    #Time derivaties of the velocities (from Kepler's equation)
+
+    y4_dot = -μ * y1 / r_magitude^3
+    y5_dot = -μ * y2 / r_magitude^3
+    y6_dot = -μ * y3 / r_magitude^3
+    #Return array of derivatives
+
+    return [y1, y2, y3, y4_dot, y5_dot, y6_dot]
+end    
+
+"""
+    rk4(ivp,n)
+
+Apply the common Runge-Kutta 4th order method to solve the given 
+IVP using `n` time steps. Returns a vector of times and a vector of
+solution values.
+"""
+function rk4(ivp,n)
+    # Time discretization.
+    a,b = ivp.tspan
+    h = (b-a)/n
+    t = [ a + i*h for i in 0:n ]
+
+    # Initialize output.
+    u = fill(float(ivp.u0),n+1)
+
+    # Time stepping.
+    for i in 1:n
+        k₁ = h*ivp.f( u[i],      ivp.p, t[i]     )
+        k₂ = h*ivp.f( u[i]+k₁/2, ivp.p, t[i]+h/2 )
+        k₃ = h*ivp.f( u[i]+k₂/2, ivp.p, t[i]+h/2 )
+        k₄ = h*ivp.f( u[i]+k₃,   ivp.p, t[i]+h   )
+        u[i+1] = u[i] + (k₁ + 2(k₂+k₃) + k₄)/6
+    end
+    return t,u
+end
+
+#Define period, gravitational parameter, time span, and time steps 
+T = 10.0
+μ = 398600 #km^3/s^2
+tspan = (0.0, T)
+n = 1000
+#Define initial positions (x0, y0, z0) and velocities (vx0, vy0, vz0)
+y0 = [y10, y20, y30, vx0, vy0, vz0] 
+
+rungeKuttaIVP = (f, y0, tspan, μ)
+
+RK4tvals, RK4uvals = rk4(rungeKuttaIVP, n)
+
+#Extract the time and solution values
+RK4xvals = RK4uvals[1, :]
+RK4yvals = RK4uvals[2, :]
+RK4zvals = RK4uvals[3, :]
+RK4vxvals = RK4uvals[4, :]
+RK4vyvals = RK4uvals[5, :]
+RK4vzvals = RK4uvals[6, :]
