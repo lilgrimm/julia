@@ -81,26 +81,27 @@ The functions within this section are all of the functions made for this project
 """
     rk4(ivp,n)
 
-Apply the common Runge-Kutta 4th order method to solve the given 
-IVP using `n` time steps. Returns a vector of times and a vector of
-solution values.
+The Runge-Kutta 4th order method to solve the given IVP using `n` time steps.
 """
 function rk4(ivp,n)
-    # Time discretization.
-    a,b = ivp.tspan
-    h = (b-a)/n
-    t = [ a + i*h for i in 0:n ]
+    #extracting the values from the ivp struct
+    tf,t0 = ivp.tspan
+    f = ivp.f
+    u0 = ivp.u0
+    p = ivp.p
+    h = (tf - t0) / n
+    t = [ t0 + i*h for i in 0:n ]
 
-    # Initialize output.
-    u = fill(float(ivp.u0),n+1)
+    #initalizing the output array
+    u = fill(float(u0),n+1)
 
-    # Time stepping.
-    for i in 1:n
-        k₁ = h*ivp.f( u[i],      ivp.p, t[i]     )
-        k₂ = h*ivp.f( u[i]+k₁/2, ivp.p, t[i]+h/2 )
-        k₃ = h*ivp.f( u[i]+k₂/2, ivp.p, t[i]+h/2 )
-        k₄ = h*ivp.f( u[i]+k₃,   ivp.p, t[i]+h   )
-        u[i+1] = u[i] + (k₁ + 2(k₂+k₃) + k₄)/6
+    #stepping through the time values and applying the RK4 method
+    for k in 1:n
+        k1 = f(u[k], p, t[k])
+        k2 = f(u[k] + k1/2, p, t[k] + h/2)
+        k3 = f(u[k] + k2/2, p, t[k] + h/2)
+        k4 = f(u[k] + k3, p, t[k] + h)
+        u[k+1] = u[k] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
     end
     return t,u
 end
