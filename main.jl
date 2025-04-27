@@ -86,21 +86,24 @@ IVP using `n` time steps. Returns a vector of times and a vector of
 solution values.
 """
 function rk4(ivp,n)
-    # Time discretization.
-    a,b = ivp.tspan
-    h = (b-a)/n
-    t = [ a + i*h for i in 0:n ]
+    #extracting the values from the ivp struct
+    tf,t0 = ivp.tspan
+    f = ivp.f
+    u0 = ivp.u0
+    p = ivp.p
+    h = (tf - t0) / n
+    t = [ t0 + i*h for i in 0:n ]
 
-    # Initialize output.
-    u = fill(float(ivp.u0),n+1)
+    #initalizing the output array
+    u = fill(float(u0),n+1)
 
-    # Time stepping.
-    for i in 1:n
-        k₁ = h*ivp.f( u[i],      ivp.p, t[i]     )
-        k₂ = h*ivp.f( u[i]+k₁/2, ivp.p, t[i]+h/2 )
-        k₃ = h*ivp.f( u[i]+k₂/2, ivp.p, t[i]+h/2 )
-        k₄ = h*ivp.f( u[i]+k₃,   ivp.p, t[i]+h   )
-        u[i+1] = u[i] + (k₁ + 2(k₂+k₃) + k₄)/6
+    #stepping through the time values and applying the RK4 method
+    for k in 1:n
+        k1 = f(u[k], p, t[k])
+        k2 = f(u[k] + k1/2, p, t[k] + h/2)
+        k3 = f(u[k] + k2/2, p, t[k] + h/2)
+        k4 = f(u[k] + k3, p, t[k] + h)
+        u[k+1] = u[k] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
     end
     return t,u
 end
@@ -289,6 +292,12 @@ n1 = 500
 n2 = 100 #number of points for cubic spline interpolation plotting
 tspan = range(0, 60*60*2, n1) #Time span: ti, time(seconds), number of iterations
 
+"""
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+This section is for the simulation of the orbit using the RK4 method, Simpson's rule, and the finite difference Euler method.
+The desired values are extracted from the outputs of the methods and the results are then plotted.
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+"""
 #RK4
 rungeKuttaIVP = (f = f, u0 = y0, tspan = (first(tspan), last(tspan)), p = μ)
 RK4tvals, RK4uvals = rk4(rungeKuttaIVP, n1)
@@ -352,11 +361,4 @@ xlabel!("Time (s)")
 ylabel!("|v| (km/s)")
 title!("Comparison of Methods for Norm of Velocity Vector")
 display(p2)
-
-
-
-
-
-
-
 
