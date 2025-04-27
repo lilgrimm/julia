@@ -357,7 +357,7 @@ plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-4);
     label = "4th order",
     xaxis = (:log10, "n"),
     yaxis = (:log10, "max error"),
-    title = "Convergence of Numarical Techniques, r",
+    title = "Convergence of Numerical Techniques, r",
     size=(800,600))
 
 plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-2); 
@@ -373,7 +373,7 @@ plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-4);
     label = "4th order",
     xaxis = (:log10, "n"),
     yaxis = (:log10, "max error"),
-    title = "Convergence of Numarical Techniques, v",
+    title = "Convergence of Numerical Techniques, v",
     size=(800,600))
 
 plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-2); 
