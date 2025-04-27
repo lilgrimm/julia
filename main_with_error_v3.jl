@@ -266,9 +266,9 @@ v_fdeuler_smooth = [spl_v_fdeuler(ti) for ti in t_small]
 
 
 #Plotting the magnitude of the position vector
-p1 = plot(t_small, r_rk4_smooth, label="RK4", lw=2, size=(800,600))
-plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, linestyle=:dash, markevery=5)
-plot!(t_small, r_fdeuler_smooth, label="Finite Difference", lw=1, linestyle=:dash, markevery=20)
+p1 = plot(t_small, r_rk4_smooth, label="RK4", width=4, size=(800,600))
+scatter!(t_small[1:5:end], r_simpson_smooth[1:5:end], label="Simpson", width=3, m=:v)
+scatter!(t_small[3:5:end], r_fdeuler_smooth[3:5:end], label="Finite Difference", width=3, m=:h)
 xlabel!("Time (s)")
 ylabel!("|r| (km)")
 title!("Comparison of Methods for Norm of Position Vector")
@@ -276,9 +276,9 @@ display(p1)
 
 
 #Plotting the magnitude of the velocity vector
-p2 = plot(t_small, v_rk4_smooth, label="RK4", lw=2, size=(800,600))
-plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, linestyle=:dash, markevery=5)
-plot!(t_small, v_fdeuler_smooth, label="Finite Difference", linestyle=:dash, markevery=20)
+p2 = plot(t_small, v_rk4_smooth, label="RK4", width=4, size=(800,600))
+scatter!(t_small[1:5:end], v_simpson_smooth[1:5:end], label="Simpson", width=3, m=:v)
+scatter!(t_small[3:5:end], v_fdeuler_smooth[3:5:end], label="Finite Difference",width =3, m=:h)
 xlabel!("Time (s)")
 ylabel!("|v| (km/s)")
 title!("Comparison of Methods for Norm of Velocity Vector")
@@ -345,12 +345,12 @@ end
 
 #plotting effect of N on function call time
 p_time = plot(n_loop, time_per_n,
-    label = [L"RK4" L"Num. Integration: Simpsons" L"Central Finite Difference"],
+    label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"],
     title = "Effect of n on Function Call Time",xlabel = "n", ylabel = "Time (s)")
 display(p_time)
 
 #error vs N (r vector)
-p_error_r = plot(n_loop, err_r, m = :o, label = [L"RK4" L"Num. Integration: Simpsons" L"Central Finite Difference"])
+p_error_r = plot(n_loop, err_r, m = :o, label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"])
 plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-4); 
     l = (:dash, :black), 
     label = "4th order",
@@ -366,7 +366,7 @@ plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-2);
 display(p_error_r)
 
 #error vs N (r vector)
-p_error_v = plot(n_loop, err_r, m = :o, label = [L"RK4" L"Num. Integration: Simpsons" L"Central Finite Difference"])
+p_error_v = plot(n_loop, err_r, m = :o, label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"])
 plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-4); 
     l = (:dash, :black), 
     label = "4th order",
