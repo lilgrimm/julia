@@ -83,29 +83,30 @@ The functions within this section are all of the functions made for this project
 
 The Runge-Kutta 4th order method to solve the given IVP using `n` time steps.
 """
-function rk4(ivp, n)
+function rk4(ivp,n)
     #extracting the values from the ivp struct
-    t0, tf = ivp.tspan
-    u0 = ivp.u0
+    ti, tfinal = ivp.tspan
     f = ivp.f
+    u0 = ivp.u0
     p = ivp.p
-
-    h = (tf - t0) / n
-    t = [t0 + i*h for i in 0:n]
+    
+    h = (tfinal - ti)/n
+    t = [ti + i*h for i in 0:n]
 
     #initalizing the output array
     u = fill(float(u0), n+1)
 
     #stepping through the time values and applying the RK4 method
-    for k in 1:n
-        k1 = f(u[k], p, t[k])
-        k2 = f(u[k] + k1/2, p, t[k] + h/2)
-        k3 = f(u[k] + k2/2, p, t[k] + h/2)
-        k4 = f(u[k] + k3, p, t[k] + h)
-        u[k+1] = u[k] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
+    for i in 1:n
+        k1 = f(u[i], p, t[i])
+        k2 = f(u[i] + (h/2) * k1, p, t[i] + h/2)
+        k3 = f(u[i] + (h/2) * k2, p, t[i] + h/2)
+        k4 = f(u[i] + h * k3, p, t[i] + h)
+        u[i+1] = u[i] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
     end
     return t,u
 end
+
 
 """
     simpson_orbit(y0, tspan)
