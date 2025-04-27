@@ -52,7 +52,6 @@ t = [0.0, 1.0, 2.0, 3.0]
 y = [0.0, 1.0, 0.0, 1.0]
 
 spline = cubspline(t, y)
-spline2 = spinterp(t,y)
 
 
 
