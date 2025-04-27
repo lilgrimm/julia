@@ -3,73 +3,6 @@ using FundamentalsNumericalComputation#,plots, DifferentialEquations, LinearAlge
 
 """
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-All of the functions in this section are from the textbook and are used for comparison purposes.
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-"""
-    spinterp(t,y)
-
-Construct a cubic not-a-knot spline interpolating function for data
-values in `y` given at nodes in `t`.
-"""
-function spinterp(t,y)
-    n = length(t)-1
-    h = [ t[k+1]-t[k] for k in 1:n ]
-
-    # Preliminary definitions.
-    Z = zeros(n,n);
-    In = I(n);  E = In[1:n-1,:];
-    J = diagm(0=>ones(n),1=>-ones(n-1))
-    H = diagm(0=>h)
-
-    # Left endpoint interpolation:
-    AL = [ In Z Z Z ]
-    vL = y[1:n]
-
-    # Right endpoint interpolation:
-    AR = [ In H H^2 H^3 ];
-    vR = y[2:n+1]
-
-    # Continuity of first derivative:
-    A1 = E*[ Z J 2*H 3*H^2 ]
-    v1 = zeros(n-1)
-
-    # Continuity of second derivative:
-    A2 = E*[ Z Z J 3*H ]
-    v2 = zeros(n-1)
-
-    # Not-a-knot conditions:
-    nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
-    nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
-
-    # Assemble and solve the full system.
-    A = [ AL; AR; A1; A2; nakL; nakR ]
-    v = [ vL; vR; v1; v2; 0; 0 ]
-    z = A\v
-
-    # Break the coefficients into separate vectors.
-    rows = 1:n
-    a = z[rows]
-    b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
-    S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
-
-    # This function evaluates the spline when called with a value
-    # for x.
-    return function (x)
-        if x < t[1] || x > t[n+1]    # outside the interval
-            return NaN
-        elseif x==t[1]
-            return y[1]
-        else
-            k = findlast(x .> t)    # last node to the left of x
-            return S[k](x-t[k])
-        end
-    end
-end
-
-"""
-------------------------------------------------------------------------------------------------------------------------------------------------------------
 The functions within this section are all of the functions made for this project. These include
     RK4 method
     Numerical Integration using Simpson's Rule
@@ -83,17 +16,18 @@ The functions within this section are all of the functions made for this project
 
 The Runge-Kutta 4th order method to solve the given IVP using `n` time steps.
 """
-function rk4(ivp,n)
+function rk4(ivp, n)
     #extracting the values from the ivp struct
-    tf,t0 = ivp.tspan
-    f = ivp.f
+    t0, tf = ivp.tspan
     u0 = ivp.u0
+    f = ivp.f
     p = ivp.p
+
     h = (tf - t0) / n
-    t = [ t0 + i*h for i in 0:n ]
+    t = [t0 + i*h for i in 0:n]
 
     #initalizing the output array
-    u = fill(float(u0),n+1)
+    u = fill(float(u0), n+1)
 
     #stepping through the time values and applying the RK4 method
     for k in 1:n
