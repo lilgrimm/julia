@@ -80,22 +80,20 @@ The functions within this section are all of the functions made for this project
 
 """
     rk4(ivp,n)
-
-Apply the common Runge-Kutta 4th order method to solve the given 
-IVP using `n` time steps. Returns a vector of times and a vector of
-solution values.
+Runge-Kutta 4th order method.
 """
-function rk4(ivp,n)
+function rk4(ivp, n)
     #extracting the values from the ivp struct
-    tf,t0 = ivp.tspan
-    f = ivp.f
+    t0, tf = ivp.tspan
     u0 = ivp.u0
+    f = ivp.f
     p = ivp.p
+
     h = (tf - t0) / n
-    t = [ t0 + i*h for i in 0:n ]
+    t = [t0 + i*h for i in 0:n]
 
     #initalizing the output array
-    u = fill(float(u0),n+1)
+    u = fill(float(u0), n+1)
 
     #stepping through the time values and applying the RK4 method
     for k in 1:n
@@ -339,8 +337,8 @@ v_fdeuler_smooth = [spl_v_fdeuler(ti) for ti in t_small]
 
 #Plotting the magnitude of the position vector
 p1 = plot(t_small, r_rk4_smooth, label="RK4", lw=2, color=:blue)
-plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-plot!(t_small, r_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
+#plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
+#plot!(t_small, r_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
 #scatter!(RK4tvals, r_rk4, label="RK4 Points", marker=:circle, color=:blue)
 #scatter!(collect(tspan), r_simpson, label="Simpson Points", marker=:square, color=:red)
 #scatter!(collect(tspan), r_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
@@ -352,8 +350,8 @@ display(p1)
 
 #Plotting the magnitude of the velocity vector
 p2 = plot(t_small, v_rk4_smooth, label="RK4", lw=2, color=:blue)
-plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-plot!(t_small, v_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
+#plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
+#plot!(t_small, v_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
 #scatter!(RK4tvals, v_rk4, label="RK4 Points", marker=:circle, color=:blue)
 #scatter!(collect(tspan), v_simpson, label="Simpson Points", marker=:square, color=:red)
 #scatter!(collect(tspan), v_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
@@ -361,4 +359,5 @@ xlabel!("Time (s)")
 ylabel!("|v| (km/s)")
 title!("Comparison of Methods for Norm of Velocity Vector")
 display(p2)
+
 
