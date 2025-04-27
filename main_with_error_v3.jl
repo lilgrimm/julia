@@ -17,24 +17,29 @@ The functions within this section are all of the functions made for this project
 The Runge-Kutta 4th order method to solve the given IVP using `n` time steps.
 """
 function rk4(ivp,n)
-    # Time discretization.
-    a,b = ivp.tspan
-    h = (b-a)/n
-    t = [ a + i*h for i in 0:n ]
+    #extracting the values from the ivp struct
+    ti, tfinal = ivp.tspan
+    f = ivp.f
+    u0 = ivp.u0
+    p = ivp.p
+    
+    h = (tfinal - ti)/n
+    t = [ti + i*h for i in 0:n]
 
-    # Initialize output.
-    u = fill(float(ivp.u0),n+1)
+    #initalizing the output array
+    u = fill(float(u0), n+1)
 
-    # Time stepping.
+    #stepping through the time values and applying the RK4 method
     for i in 1:n
-        k₁ = h*ivp.f( u[i],      ivp.p, t[i]     )
-        k₂ = h*ivp.f( u[i]+k₁/2, ivp.p, t[i]+h/2 )
-        k₃ = h*ivp.f( u[i]+k₂/2, ivp.p, t[i]+h/2 )
-        k₄ = h*ivp.f( u[i]+k₃,   ivp.p, t[i]+h   )
-        u[i+1] = u[i] + (k₁ + 2(k₂+k₃) + k₄)/6
+        k1 = f(u[i], p, t[i])
+        k2 = f(u[i] + (h/2) * k1, p, t[i] + h/2)
+        k3 = f(u[i] + (h/2) * k2, p, t[i] + h/2)
+        k4 = f(u[i] + h * k3, p, t[i] + h)
+        u[i+1] = u[i] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
     end
     return t,u
 end
+
 
 """
     simpson_orbit(y0, tspan)
