@@ -1,5 +1,5 @@
 
-using FundamentalsNumericalComputation#,plots, DifferentialEquations, LinearAlgebra, Polynomials
+using FundamentalsNumericalComputation
 
 """
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -317,7 +317,6 @@ time_per_n = zeros(length(n_loop), 3)
 for (k, n) in enumerate(n_loop)
     tspan_n = range(0, 60*60*2, n)
 
-
     t_rk4_n = @elapsed RK4tvals_n, RK4uvals_n = rk4(rungeKuttaIVP, n-1)
     r_rk4_n = [sqrt(u[1]^2 + u[2]^2 + u[3]^2) for u in RK4uvals_n]
     v_rk4_n = [sqrt(u[4]^2 + u[5]^2 + u[6]^2) for u in RK4uvals_n]
@@ -347,7 +346,7 @@ end
 #plotting effect of N on function call time
 p_time = plot(n_loop, time_per_n,
     label = [L"RK4" L"Num. Integration: Simpsons" L"Central Finite Difference"],
-    title = "Effect of N on Function Call Time",xlabel = "N", ylabel = "Time(sec)")
+    title = "Effect of n on Function Call Time",xlabel = "n", ylabel = "Time (s)")
 display(p_time)
 
 #error vs N (r vector)
@@ -356,7 +355,7 @@ plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-4);
     l = (:dash, :black), 
     label = "4th order",
     xaxis = (:log10, "n"),
-    yaxis = (:log10, "max error"),
+    yaxis = (:log10, "Max Error"),
     title = "Convergence of Numerical Techniques, r",
     size=(800,600))
 
@@ -372,7 +371,7 @@ plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-4);
     l = (:dash, :black), 
     label = "4th order",
     xaxis = (:log10, "n"),
-    yaxis = (:log10, "max error"),
+    yaxis = (:log10, "Max Error"),
     title = "Convergence of Numerical Techniques, v",
     size=(800,600))
 
