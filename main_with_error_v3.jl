@@ -265,14 +265,10 @@ r_fdeuler_smooth = [spl_r_fdeuler(ti) for ti in t_small]
 v_fdeuler_smooth = [spl_v_fdeuler(ti) for ti in t_small]
 
 
-
 #Plotting the magnitude of the position vector
-p1 = plot(t_small, r_rk4_smooth, label="RK4", lw=2, color=:blue)
-plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-plot!(t_small, r_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
-#scatter!(RK4tvals, r_rk4, label="RK4 Points", marker=:circle, color=:blue)
-#scatter!(collect(tspan), r_simpson, label="Simpson Points", marker=:square, color=:red)
-#scatter!(collect(tspan), r_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
+p1 = plot(t_small, r_rk4_smooth, label="RK4", lw=2, size=(800,600))
+plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, linestyle=:dash, markevery=5)
+plot!(t_small, r_fdeuler_smooth, label="Finite Difference", lw=1, linestyle=:dash, markevery=20)
 xlabel!("Time (s)")
 ylabel!("|r| (km)")
 title!("Comparison of Methods for Norm of Position Vector")
@@ -280,12 +276,9 @@ display(p1)
 
 
 #Plotting the magnitude of the velocity vector
-p2 = plot(t_small, v_rk4_smooth, label="RK4", lw=2, color=:blue)
-plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-plot!(t_small, v_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
-#scatter!(RK4tvals, v_rk4, label="RK4 Points", marker=:circle, color=:blue)
-#scatter!(collect(tspan), v_simpson, label="Simpson Points", marker=:square, color=:red)
-#scatter!(collect(tspan), v_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
+p2 = plot(t_small, v_rk4_smooth, label="RK4", lw=2, size=(800,600))
+plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, linestyle=:dash, markevery=5)
+plot!(t_small, v_fdeuler_smooth, label="Finite Difference", linestyle=:dash, markevery=20)
 xlabel!("Time (s)")
 ylabel!("|v| (km/s)")
 title!("Comparison of Methods for Norm of Velocity Vector")
