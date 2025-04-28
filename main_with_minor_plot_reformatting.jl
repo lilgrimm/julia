@@ -347,7 +347,7 @@ end
 #plotting effect of N on function call time
 p_time = plot(n_loop, time_per_n, width = 2,
     label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"],
-    title = "The Effect of the Number of Points on Function Execution Time",xlabel = "Number of Points, n", ylabel = "Execution Time, t (s)")
+    title = "The Effect of the Number of Points on Function Execution Time",xlabel = "Number of Points, n", ylabel = "Execution Time, t (s)",size=(800,600))
 display(p_time)
 
 #error vs N (r vector)
