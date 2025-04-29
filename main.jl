@@ -1,72 +1,5 @@
 
-using Plots, FundamentalsNumericalComputation, DifferentialEquations, LinearAlgebra, Polynomials
-
-"""
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-All of the functions in this section are from the textbook and are used for comparison purposes.
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-"""
-    spinterp(t,y)
-
-Construct a cubic not-a-knot spline interpolating function for data
-values in `y` given at nodes in `t`.
-"""
-function spinterp(t,y)
-    n = length(t)-1
-    h = [ t[k+1]-t[k] for k in 1:n ]
-
-    # Preliminary definitions.
-    Z = zeros(n,n);
-    In = I(n);  E = In[1:n-1,:];
-    J = diagm(0=>ones(n),1=>-ones(n-1))
-    H = diagm(0=>h)
-
-    # Left endpoint interpolation:
-    AL = [ In Z Z Z ]
-    vL = y[1:n]
-
-    # Right endpoint interpolation:
-    AR = [ In H H^2 H^3 ];
-    vR = y[2:n+1]
-
-    # Continuity of first derivative:
-    A1 = E*[ Z J 2*H 3*H^2 ]
-    v1 = zeros(n-1)
-
-    # Continuity of second derivative:
-    A2 = E*[ Z Z J 3*H ]
-    v2 = zeros(n-1)
-
-    # Not-a-knot conditions:
-    nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
-    nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
-
-    # Assemble and solve the full system.
-    A = [ AL; AR; A1; A2; nakL; nakR ]
-    v = [ vL; vR; v1; v2; 0; 0 ]
-    z = A\v
-
-    # Break the coefficients into separate vectors.
-    rows = 1:n
-    a = z[rows]
-    b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
-    S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
-
-    # This function evaluates the spline when called with a value
-    # for x.
-    return function (x)
-        if x < t[1] || x > t[n+1]    # outside the interval
-            return NaN
-        elseif x==t[1]
-            return y[1]
-        else
-            k = findlast(x .> t)    # last node to the left of x
-            return S[k](x-t[k])
-        end
-    end
-end
+using FundamentalsNumericalComputation
 
 """
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -80,31 +13,33 @@ The functions within this section are all of the functions made for this project
 
 """
     rk4(ivp,n)
-Runge-Kutta 4th order method.
+
+The Runge-Kutta 4th order
 """
-function rk4(ivp, n)
-    #extracting the values from the ivp struct
-    t0, tf = ivp.tspan
-    u0 = ivp.u0
+function rk4(ivp,n)
+    #Extracting the values from the IVP struct
+    ti, tfinal = ivp.tspan
     f = ivp.f
+    u0 = ivp.u0
     p = ivp.p
+    
+    h = (tfinal - ti)/n
+    t = [ti + i*h for i in 0:n]
 
-    h = (tf - t0) / n
-    t = [t0 + i*h for i in 0:n]
-
-    #initalizing the output array
+    #Initalizing the output array
     u = fill(float(u0), n+1)
 
-    #stepping through the time values and applying the RK4 method
-    for k in 1:n
-        k1 = f(u[k], p, t[k])
-        k2 = f(u[k] + k1/2, p, t[k] + h/2)
-        k3 = f(u[k] + k2/2, p, t[k] + h/2)
-        k4 = f(u[k] + k3, p, t[k] + h)
-        u[k+1] = u[k] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
+    #Stepping through the time values and applying the RK4 method
+    for i in 1:n
+        k1 = f(u[i], p, t[i])
+        k2 = f(u[i] + (h/2) * k1, p, t[i] + h/2)
+        k3 = f(u[i] + (h/2) * k2, p, t[i] + h/2)
+        k4 = f(u[i] + h * k3, p, t[i] + h)
+        u[i+1] = u[i] + (h/6) * (k1 + 2*k2 + 2*k3 + k4)
     end
     return t,u
 end
+
 
 """
     simpson_orbit(y0, tspan)
@@ -157,7 +92,7 @@ function fdEuler(y, t)
     yVel = [y[5], (yPos[end] - yPos[end - 1])/dt]
     zVel = [y[6], (zPos[end] - zPos[end - 1])/dt]
 
-    for _ in 2:length(tspan)
+    for _ in 3:length(t)
         # Finding New Position Magnitude
         posMag = sqrt((xPos[end])^2+(yPos[end])^2+(zPos[end])^2)
 
@@ -182,6 +117,7 @@ end
 
 """
     cubspline(t,y)
+Cubic spline interpolation
 """
 function cubspline(t,y)
     n = length(t)-1
@@ -190,22 +126,22 @@ function cubspline(t,y)
     for i = 1:n
         h[i] = t[i+1]-t[i]
     end
-    @show size(h)
+    #@show size(h)
     Id = I(n)
     z = zeros(n,n)
     E = Id[1:n-1,:]
     J = diagm(0=>ones(n),1=>-ones(n-1))
     first_mat = [Id z z z]
     H = diagm(0 => h)
-    @show size(H)
+    #@show size(H)
     second_mat = [Id H H.^2 H.^3]
     third_mat = E*[z J 2*H 3*H.^2]
     fourth_mat = E*[z z J 3*H]
     fifth_mat = hcat(zeros(1, 3n), [1.0], [-1.0], zeros(1, n-2))
     sixth_mat = hcat(zeros(1, 3n), zeros(1, n-2), [1.0], [-1.0])    
-    @show size(fifth_mat)
+    #@show size(fifth_mat)
     RHS = vcat(y[1:n], y[2:n+1], zeros(2*(n-1)), 0, 0)
-    @show size(RHS)
+    #@show size(RHS)
     full_mat = [first_mat;second_mat;third_mat;fourth_mat;fifth_mat;sixth_mat]
     coeff = full_mat\RHS
 
@@ -246,7 +182,6 @@ function rhs(y)  #setup for the ODE
     ]
 end
 
-
 """
     function f(y, μ)
 
@@ -277,7 +212,10 @@ end
 
 """
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-Case set up and initialization for the methods. This test case is for a 2 hour simulation of a satellite in orbit around the Earth.
+Case set up and initialization for the methods. 
+This test case is for a 2 hour simulation of a satellite in orbit around the Earth. This section is to determine the values of the position and velocity 
+vectors at each time step up until the final time that solve the problem outline by Kepler's problem and the given initial state for the orbit. The
+results are then plotted using the Cubic Spline Interpolation method to smooth the curves.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 #Gravitational parameter of Earth (km^3/s^2)
@@ -287,15 +225,9 @@ Case set up and initialization for the methods. This test case is for a 2 hour s
 y0 = [20000, -105000, -19000, 0.9, -3.4, -1.5] #TEST CASE
 
 n1 = 500
-n2 = 100 #number of points for cubic spline interpolation plotting
-tspan = range(0, 60*60*2, n1) #Time span: ti, time(seconds), number of iterations
+n2 = 100 #smaller number of points for cubic spline interpolation plotting
+tspan = range(0, 60*60*2, n1) #time span: initial time, final time (seconds), number of iterations
 
-"""
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-This section is for the simulation of the orbit using the RK4 method, Simpson's rule, and the finite difference Euler method.
-The desired values are extracted from the outputs of the methods and the results are then plotted.
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-"""
 #RK4
 rungeKuttaIVP = (f = f, u0 = y0, tspan = (first(tspan), last(tspan)), p = μ)
 RK4tvals, RK4uvals = rk4(rungeKuttaIVP, n1)
@@ -303,10 +235,10 @@ RK4tvals, RK4uvals = rk4(rungeKuttaIVP, n1)
 #Simpson's Rule
 simpson_result = simpson_orbit(y0, tspan)
 
-#Finite Difference Euler
+#Finite Difference
 fdeuler_result = fdEuler(y0, tspan)
 
-#Extract positions
+#Extract positions from each method and normalize to get magnitudes
 r_rk4 = [sqrt(u[1]^2 + u[2]^2 + u[3]^2) for u in RK4uvals]
 v_rk4 = [sqrt(u[4]^2 + u[5]^2 + u[6]^2) for u in RK4uvals]
 
@@ -317,16 +249,16 @@ r_fdeuler = sqrt.(fdeuler_result[:, 1].^2 .+ fdeuler_result[:, 2].^2 .+ fdeuler_
 v_fdeuler = sqrt.(fdeuler_result[:, 4].^2 .+ fdeuler_result[:, 5].^2 .+ fdeuler_result[:, 6].^2)
 
 #Interpolation for each method
-spl_r_rk4 = spinterp(RK4tvals, r_rk4)
-spl_v_rk4 = spinterp(RK4tvals, v_rk4)
+spl_r_rk4 = cubspline(RK4tvals, r_rk4)
+spl_v_rk4 = cubspline(RK4tvals, v_rk4)
 
-spl_r_simpson = spinterp(collect(tspan), r_simpson)
-spl_v_simpson = spinterp(collect(tspan), v_simpson)
+spl_r_simpson = cubspline(collect(tspan), r_simpson)
+spl_v_simpson = cubspline(collect(tspan), v_simpson)
 
-spl_r_fdeuler = spinterp(collect(tspan), r_fdeuler)
-spl_v_fdeuler = spinterp(collect(tspan), v_fdeuler)
+spl_r_fdeuler = cubspline(collect(tspan), r_fdeuler)
+spl_v_fdeuler = cubspline(collect(tspan), v_fdeuler)
 
-#Different n size for plotting
+#Use different (smaller) n size for plotting (for smoother curves)
 t_small = range(first(tspan), last(tspan), n2)
 r_rk4_smooth = [spl_r_rk4(ti) for ti in t_small]
 v_rk4_smooth = [spl_v_rk4(ti) for ti in t_small]
@@ -336,28 +268,108 @@ r_fdeuler_smooth = [spl_r_fdeuler(ti) for ti in t_small]
 v_fdeuler_smooth = [spl_v_fdeuler(ti) for ti in t_small]
 
 #Plotting the magnitude of the position vector
-p1 = plot(t_small, r_rk4_smooth, label="RK4", lw=2, color=:blue)
-#plot!(t_small, r_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-#plot!(t_small, r_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
-#scatter!(RK4tvals, r_rk4, label="RK4 Points", marker=:circle, color=:blue)
-#scatter!(collect(tspan), r_simpson, label="Simpson Points", marker=:square, color=:red)
-#scatter!(collect(tspan), r_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
-xlabel!("Time (s)")
-ylabel!("|r| (km)")
-title!("Comparison of Methods for Norm of Position Vector")
+p1 = plot(t_small, r_rk4_smooth, label="RK4", width=4, size=(800,600))
+scatter!(t_small[1:5:end], r_simpson_smooth[1:5:end], label="Simpson", width=3, m=:v)
+scatter!(t_small[3:5:end], r_fdeuler_smooth[3:5:end], label="Finite Difference", width=3, m=:h)
+xlabel!("Time, t (s)")
+ylabel!("Position Vector Magnitude, |r| (km)")
+title!("Position Over Time Using Various Methods")
 display(p1)
 
-
 #Plotting the magnitude of the velocity vector
-p2 = plot(t_small, v_rk4_smooth, label="RK4", lw=2, color=:blue)
-#plot!(t_small, v_simpson_smooth, label="Simpson", lw=2, color=:red, linestyle=:dash)
-#plot!(t_small, v_fdeuler_smooth, label="FD Euler", lw=2, color=:green, linestyle=:dash)
-#scatter!(RK4tvals, v_rk4, label="RK4 Points", marker=:circle, color=:blue)
-#scatter!(collect(tspan), v_simpson, label="Simpson Points", marker=:square, color=:red)
-#scatter!(collect(tspan), v_fdeuler, label="FD Euler Points", marker=:diamond, color=:green)
-xlabel!("Time (s)")
-ylabel!("|v| (km/s)")
-title!("Comparison of Methods for Norm of Velocity Vector")
+p2 = plot(t_small, v_rk4_smooth, label="RK4", width=4, size=(800,600))
+scatter!(t_small[1:5:end], v_simpson_smooth[1:5:end], label="Simpson", width=3, m=:v)
+scatter!(t_small[3:5:end], v_fdeuler_smooth[3:5:end], label="Finite Difference",width =3, m=:h)
+xlabel!("Time, t (s)")
+ylabel!("Velocity Vector Magnitude, |v| (km/s)")
+title!("Velocity Over Time Using Various Methods")
 display(p2)
 
+"""
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Error and Call Time Graphing
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+"""
+#Initilalizing the rkIVP
+tspan = range(0, 60*60*2, n1) #Time span: ti, time(seconds), number of iterations
+rungeKuttaIVP = (f = f, u0 = y0, tspan = (first(tspan), last(tspan)), p = μ)
 
+#RK4 with high N value(closest to exact solution we can get)
+RK4tvals_exact, RK4uvals_exact = rk4(rungeKuttaIVP, 10^3)
+r_rk4_exact = [sqrt(u[1]^2 + u[2]^2 + u[3]^2) for u in RK4uvals_exact]
+v_rk4_exact = [sqrt(u[4]^2 + u[5]^2 + u[6]^2) for u in RK4uvals_exact]
+
+#Interpolate the exact using cubic spline to find r and v at arbitrary time t
+r_interp = cubspline(RK4tvals_exact, r_rk4_exact)
+v_interp = cubspline(RK4tvals_exact, v_rk4_exact)
+
+#Setting up error loop values
+n_loop = @. round(Int, 2^(4:0.5:11))
+err_r = zeros(length(n_loop), 3)
+err_v = zeros(length(n_loop), 3)
+time_per_n = zeros(length(n_loop), 3)
+
+#Loop through the n values generated
+for (k, n) in enumerate(n_loop)
+    tspan_n = range(0, 60*60*2, n)
+
+    t_rk4_n = @elapsed RK4tvals_n, RK4uvals_n = rk4(rungeKuttaIVP, n-1)
+    r_rk4_n = [sqrt(u[1]^2 + u[2]^2 + u[3]^2) for u in RK4uvals_n]
+    v_rk4_n = [sqrt(u[4]^2 + u[5]^2 + u[6]^2) for u in RK4uvals_n]
+    
+    err_r[k, 1] = norm(r_interp.(tspan_n) - r_rk4_n, Inf)
+    err_v[k, 1] = norm(v_interp.(tspan_n) - v_rk4_n, Inf)
+    time_per_n[k, 1] = t_rk4_n
+
+    t_simpson_n = @elapsed simpson_result_n = simpson_orbit(y0, tspan_n)
+    r_simpson_n = sqrt.(simpson_result_n[1, :].^2 .+ simpson_result_n[2, :].^2 .+ simpson_result_n[3, :].^2)
+    v_simpson_n = sqrt.(simpson_result_n[4, :].^2 .+ simpson_result_n[5, :].^2 .+ simpson_result_n[6, :].^2)
+    
+    err_r[k, 2] = norm(r_interp.(tspan_n) - r_simpson_n, Inf)
+    err_v[k, 2] = norm(v_interp.(tspan_n) - v_simpson_n, Inf)
+    time_per_n[k, 2] = t_simpson_n
+
+    t_fdeuler_n = @elapsed fdeuler_result_n = fdEuler(y0, tspan_n)
+    r_fdeuler_n = sqrt.(fdeuler_result_n[:, 1].^2 .+ fdeuler_result_n[:, 2].^2 .+ fdeuler_result_n[:, 3].^2)
+    v_fdeuler_n = sqrt.(fdeuler_result_n[:, 4].^2 .+ fdeuler_result_n[:, 5].^2 .+ fdeuler_result_n[:, 6].^2)
+    
+    err_r[k, 3] = norm(r_interp.(tspan_n) - r_fdeuler_n, Inf)
+    err_v[k, 3] = norm(v_interp.(tspan_n) - v_fdeuler_n, Inf)
+    time_per_n[k, 3] = t_fdeuler_n
+end
+
+#Plotting effect of n on function call time
+p_time = plot(n_loop, time_per_n,
+    label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"],
+    title = "Effect of n on Function Call Time",xlabel = "n", ylabel = "Time (s)")
+display(p_time)
+
+#Error vs n (r vector)
+p_error_r = plot(n_loop, err_r, m = :o, label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"])
+plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-4); 
+    l = (:dash, :black), 
+    label = "4th order",
+    xaxis = (:log10, "n"),
+    yaxis = (:log10, "Max Error"),
+    title = "Convergence of Numerical Techniques, r",
+    size=(800,600))
+
+plot!(p_error_r, n_loop, 10 * 10 * n_loop .^ (-2); 
+    l = (:dash, :gray), 
+    label = "2nd order")
+display(p_error_r)
+
+#Error vs n (v vector)
+p_error_v = plot(n_loop, err_r, m = :o, label = ["RK4" "Num. Integration: Simpsons" "Central Finite Difference"])
+plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-4); 
+    l = (:dash, :black), 
+    label = "4th order",
+    xaxis = (:log10, "n"),
+    yaxis = (:log10, "Max Error"),
+    title = "Convergence of Numerical Techniques, v",
+    size=(800,600))
+
+plot!(p_error_v, n_loop, 10 * 10 * n_loop .^ (-2); 
+    l = (:dash, :gray), 
+    label = "2nd order")
+display(p_error_v)
